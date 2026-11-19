@@ -8,22 +8,7 @@ function getTodayString() {
 
     const TODAY_STR = getTodayString();
 
-    let todos = JSON.parse(localStorage.getItem("my_todos")) || [
-      {
-        id: 1,
-        title: "프로젝트 기획안 검토",
-        description: "팀원들이 공유한 초안 피드백 정리하기",
-        date: TODAY_STR,
-        completed: false,
-      },
-      {
-        id: 2,
-        title: "치과 정기 검진 예약",
-        description: "오후 시간대로 전화 문의",
-        date: "2026-11-20",
-        completed: false,
-      },
-    ];
+    let todos = [];
 
     let currentView = "list"; // 'list' 또는 'calendar'
     let currentCalendarDate = new Date(); // 달력 탐색용 기준 날짜
@@ -67,10 +52,6 @@ function getTodayString() {
 
     todayDisplay.textContent = `오늘 날짜: ${TODAY_STR}`;
 
-    function saveTodos() {
-      localStorage.setItem("my_todos", JSON.stringify(todos));
-    }
-
     function createTodoElement(todo) {
       const item = document.createElement("div");
       item.className = `todo-item ${todo.completed ? "completed" : ""}`;
@@ -99,7 +80,6 @@ function getTodayString() {
       const checkbox = item.querySelector(".todo-checkbox");
       checkbox.addEventListener("change", () => {
         todo.completed = checkbox.checked;
-        saveTodos();
         renderApp();
       });
 
@@ -107,7 +87,6 @@ function getTodayString() {
       deleteBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         todos = todos.filter((t) => t.id !== todo.id);
-        saveTodos();
         renderApp();
       });
 
@@ -427,7 +406,6 @@ function getTodayString() {
       const target = todos.find((t) => t.id === Number(id));
       if (target) {
         target.completed = !target.completed;
-        saveTodos();
         renderApp();
         closeModal();
       }
@@ -461,7 +439,6 @@ function getTodayString() {
         todos.push(newTodo);
       }
 
-      saveTodos();
       renderApp();
       closeModal();
     });
