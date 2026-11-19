@@ -8,6 +8,21 @@ function getTodayString() {
 
     const TODAY_STR = getTodayString();
 
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8NjyVXdgfA0yJ2jgLqMB-gEMk4Eu3Jyc",
+      authDomain: "to-do-92650.firebaseapp.com",
+      databaseURL: "https://to-do-92650-default-rtdb.firebaseio.com",
+      projectId: "to-do-92650",
+      storageBucket: "to-do-92650.firebasestorage.app",
+      messagingSenderId: "90205405198",
+      appId: "1:90205405198:web:d68956669af16cf0ce3c5f",
+      measurementId: "G-0Z8YJ4TLD0"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const todosRef = database.ref("todos");
+
     let todos = [];
 
     let currentView = "list"; // 'list' 또는 'calendar'
@@ -78,16 +93,23 @@ function getTodayString() {
       });
 
       const checkbox = item.querySelector(".todo-checkbox");
-      checkbox.addEventListener("change", () => {
-        todo.completed = checkbox.checked;
-        renderApp();
+      checkbox.addEventListener("change", async () => {
+        try {
+          await todosRef.child(todo.id).update({ completed: checkbox.checked });
+        } catch (error) {
+          checkbox.checked = todo.completed;
+          showFirebaseError(error);
+        }
       });
 
       const deleteBtn = item.querySelector(".btn-delete");
-      deleteBtn.addEventListener("click", (e) => {
+      deleteBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
-        todos = todos.filter((t) => t.id !== todo.id);
-        renderApp();
+        try {
+          await todosRef.child(todo.id).remove();
+        } catch (error) {
+          showFirebaseError(error);
+        }
       });
 
       return item;
@@ -399,19 +421,22 @@ function getTodayString() {
       if (e.target === modal) closeModal();
     });
 
-    toggleCompleteBtn.addEventListener("click", () => {
+    toggleCompleteBtn.addEventListener("click", async () => {
       const id = idInput.value;
       if (!id) return;
 
-      const target = todos.find((t) => t.id === Number(id));
-      if (target) {
-        target.completed = !target.completed;
-        renderApp();
+      const target = todos.find((todo) => todo.id === id);
+      if (!target) return;
+
+      try {
+        await todosRef.child(id).update({ completed: !target.completed });
         closeModal();
+      } catch (error) {
+        showFirebaseError(error);
       }
     });
 
-    todoForm.addEventListener("submit", (e) => {
+    todoForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const id = idInput.value;
@@ -421,26 +446,46 @@ function getTodayString() {
 
       if (!title || !date) return;
 
-      if (id) {
-        const target = todos.find((t) => t.id === Number(id));
-        if (target) {
-          target.title = title;
-          target.description = description;
-          target.date = date;
+      try {
+        if (id) {
+          await todosRef.child(id).update({ title, description, date });
+        } else {
+          await todosRef.push({
+            title,
+            description,
+            date,
+            completed: false,
+          });
         }
-      } else {
-        const newTodo = {
-          id: Date.now(),
-          title,
-          description,
-          date,
-          completed: false,
-        };
-        todos.push(newTodo);
-      }
 
-      renderApp();
-      closeModal();
+        closeModal();
+      } catch (error) {
+        showFirebaseError(error);
+      }
     });
 
+    function showFirebaseError(error) {
+      console.error("Firebase 요청 실패:", error);
+      alert("Firebase에 연결하거나 저장하지 못했습니다. 인터넷 연결과 Realtime Database 규칙을 확인해 주세요.");
+    }
+
     renderApp();
+
+    todosRef.on(
+      "value",
+      (snapshot) => {
+        const data = snapshot.val() || {};
+        todos = Object.entries(data)
+          .filter(([, todo]) => todo && typeof todo === "object")
+          .map(([id, todo]) => ({
+            id,
+            title: todo.title || "",
+            description: todo.description || "",
+            date: todo.date || "",
+            completed: Boolean(todo.completed),
+          }))
+          .filter((todo) => todo.title && todo.date);
+        renderApp();
+      },
+      showFirebaseError
+    );
