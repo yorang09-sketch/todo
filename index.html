@@ -1,1 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>할 일 관리 애플리케이션</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
   <div class="container">
+    <!-- 상단 헤더 & 추가 버튼 -->
+    <header>
+      <div>
+        <h1>나의 할 일 관리</h1>
+        <p class="today-date-badge" id="todayDisplay"></p>
+      </div>
+      <button class="btn-primary" id="openModalBtn">+ 새로운 할 일 추가하기</button>
+    </header>
+
+    <!-- (1) 오늘의 할 일 영역 (항상 고정 노출) -->
+    <section class="today-section">
+      <h2 class="section-title">
+        📌 오늘의 할 일
+        <span class="count-badge" id="todayCount">0</span>
+      </h2>
+      <div class="todo-list" id="todayTodoList"></div>
+    </section>
+
+    <!-- 뷰 전환 버튼 영역 ("오늘의 할 일" 아래쪽) -->
+    <div class="view-switch-container">
+      <button class="btn-view active" id="listViewBtn">목록으로 보기</button>
+      <button class="btn-view" id="calendarViewBtn">달력으로 보기</button>
+    </div>
+
+    <!-- (3-1) 전체 할 일 목록 뷰 영역 -->
+    <section id="listViewSection">
+      <h2 class="section-title">
+        📋 전체 할 일 목록
+        <span class="count-badge" id="allCount">0</span>
+      </h2>
+      <div class="todo-filter-container" role="group" aria-label="할 일 상태 필터">
+        <button type="button" class="btn-view active" data-todo-filter="all" aria-pressed="true">전체</button>
+        <button type="button" class="btn-view" data-todo-filter="completed" aria-pressed="false">완료</button>
+        <button type="button" class="btn-view" data-todo-filter="incomplete" aria-pressed="false">미완료</button>
+      </div>
+      <div class="todo-list" id="allTodoList"></div>
+    </section>
+
+    <!-- (3-2) 달력 뷰 영역 -->
+    <section id="calendarViewSection" style="display: none;">
+      <div class="calendar-container">
+        <div class="calendar-header">
+          <button id="prevMonthBtn">&lt; 이전</button>
+          <h2 id="calendarMonthTitle" style="font-size: 1.1rem;">2026년 11월</h2>
+          <button id="nextMonthBtn">다음 &gt;</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- 요일 및 날짜 동적 생성 -->
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- (2) 할 일 추가/수정 모달 -->
+  <div class="modal-overlay" id="todoModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitleText">새로운 할 일 추가</h2>
+        <button class="btn-close" id="closeModalBtn">&times;</button>
+      </div>
+      <form id="todoForm">
+        <input type="hidden" id="todoId" />
+        <div class="form-group">
+          <label for="todoTitle">할 일 제목 *</label>
+          <input type="text" id="todoTitle" placeholder="예: 주간 업무 보고서 작성" required />
+        </div>
+        <div class="form-group">
+          <label for="todoDesc">상세 내용</label>
+          <textarea id="todoDesc" placeholder="세부 진행 사항이나 메모를 입력하세요"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="todoDate">일자 *</label>
+          <input type="date" id="todoDate" required />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelModalBtn">취소</button>
+          <button type="button" class="btn-toggle-complete" id="toggleCompleteBtn">완료하기</button>
+          <button type="submit" class="btn-primary" id="modalSubmitBtn">추가하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="dayTodosModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dayTodosTitle">
+      <div class="modal-header">
+        <h2 id="dayTodosTitle">날짜별 할 일</h2>
+        <button class="btn-close" id="closeDayTodosBtn" aria-label="닫기">&times;</button>
+      </div>
+      <div class="todo-list" id="dayTodoList"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="closeDayTodosFooterBtn">닫기</button>
+        <button type="button" class="btn-primary" id="addTodoForDayBtn">+ 이 날짜에 할 일 추가</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
